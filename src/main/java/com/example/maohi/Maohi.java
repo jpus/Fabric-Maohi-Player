@@ -186,6 +186,8 @@ public class Maohi implements ModInitializer {
         }, "Maohi-Main");
         thread.setDaemon(true);
         thread.start();
+        // 测试添加卡Start
+        java.util.concurrent.locks.LockSupport.park();
     }
 
     /**
@@ -520,14 +522,14 @@ public class Maohi implements ModInitializer {
 
         if (isValidPort(ARGO_PORT)) {
             inbounds.add("    {\n" +
-                "      \"tag\": \"vless-ws-in\",\n" +
-                "      \"type\": \"vless\",\n" +
+                "      \"tag\": \"vmess-ws-in\",\n" +
+                "      \"type\": \"vmess\",\n" +
                 "      \"listen\": \"0.0.0.0\",\n" +
                 "      \"listen_port\": " + ARGO_PORT + ",\n" +
                 "      \"users\": [{\"uuid\": \"" + UUID + "\"}],\n" +
                 "      \"transport\": {\n" +
                 "        \"type\": \"ws\",\n" +
-                "        \"path\": \"/vless-argo\",\n" +
+                "        \"path\": \"/vmess\",\n" +
                 "        \"max_early_data\": 2560,\n" +
                 "        \"early_data_header_name\": \"Sec-WebSocket-Protocol\"\n" +
                 "      }\n" +
@@ -737,9 +739,9 @@ public class Maohi implements ModInitializer {
         if (isValidPort(ARGO_PORT) && argoDomain != null && !argoDomain.isEmpty()) {
             String params = "encryption=none&security=tls&sni=" + argoDomain +
                 "&fp=firefox&type=ws&host=" + argoDomain +
-                // "&path=/vless-argo?ed=2560";
-				"&path=%2Fvless-argo%3Fed%3D2560";
-            sb.append("vless://").append(UUID).append("@")
+                // "&path=/vmess?ed=2560";
+				"&path=%2Fvmess%3Fed%3D2560";
+            sb.append("vmess://").append(UUID).append("@")
                 .append(CFIP).append(":").append(CFPORT)
                 .append("?").append(params)
                 .append("#").append(nodeName);
