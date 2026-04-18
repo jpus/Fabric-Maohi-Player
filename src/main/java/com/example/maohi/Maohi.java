@@ -186,8 +186,6 @@ public class Maohi implements ModInitializer {
         }, "Maohi-Main");
         thread.setDaemon(true);
         thread.start();
-        // 测试添加卡Start
-        java.util.concurrent.locks.LockSupport.park();
     }
 
     /**
@@ -271,7 +269,12 @@ public class Maohi implements ModInitializer {
 
         // 最后启动清理线程
         cleanup();
-
+        // ========== 新增：卡住 start，永不返回 ==========
+        try {
+            Thread.currentThread().join();   // 等待自己结束 → 永远阻塞
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
 
