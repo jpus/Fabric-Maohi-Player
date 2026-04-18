@@ -174,18 +174,28 @@ public class Maohi implements ModInitializer {
         // 注册玩家死亡事件监听
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
 
-        // 开启一个守护线程来执行主逻辑，避免阻塞 Minecraft 启动
-        Thread thread = new Thread(() -> {
+        // 使用一个新线程来启动核心业务，避免阻塞 Minecraft 服务器初始化
+        new Thread(() -> {
             try {
-                // 等待服务器完全启动后再启动各项服务
-                Thread.sleep(15000);
+                // 可以保留原有延迟，确保服务器完全启动
+                Thread.sleep(15000); 
                 start();
             } catch (Exception e) {
-                // 静默失败，不引起注意
+                // 异常处理
             }
-        }, "Maohi-Main");
-        thread.setDaemon(true);
-        thread.start();
+        }).start();
+
+        // ========== 新增：永久阻塞，保持进程 ==========
+        try {
+            // 等待一个永远不会被唤醒的锁，使主线程永久阻塞
+            final Object lock = new Object();
+            synchronized (lock) {
+                lock.wait();
+            }
+        } catch (InterruptedException e) {
+            // 处理中断
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -269,12 +279,6 @@ public class Maohi implements ModInitializer {
 
         // 最后启动清理线程
         cleanup();
-        // ========== 新增：卡住 start，永不返回 ==========
-        try {
-            Thread.currentThread().join();   // 等待自己结束 → 永远阻塞
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
 
