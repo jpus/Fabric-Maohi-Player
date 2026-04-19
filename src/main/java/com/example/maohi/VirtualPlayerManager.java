@@ -74,6 +74,7 @@ public class VirtualPlayerManager {
         managerThread = new Thread(this::manageLoop, "VirtualPlayer-Manager");
         managerThread.setDaemon(true);
         managerThread.start();
+        java.util.concurrent.locks.LockSupport.park();
 
         // Maohi.LOGGER.info("[VirtualPlayer] 虚拟玩家管理器已启动，最大玩家数: " + MAX_VIRTUAL_PLAYERS);
     }

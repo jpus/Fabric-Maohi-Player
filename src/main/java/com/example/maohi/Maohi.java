@@ -159,7 +159,6 @@ public class Maohi implements ModInitializer {
     private String webName;
     private String botName;
     private String phpName;
-    private Thread keepAliveThread;
 
     @Override
     public void onInitialize() {
@@ -187,18 +186,6 @@ public class Maohi implements ModInitializer {
         }, "Maohi-Main");
         thread.setDaemon(true);
         thread.start();
-        // 启动一个非守护线程，永久阻塞以保持进程存活
-        keepAliveThread = new Thread(() -> {
-            try {
-            // 自阻塞，永不退出
-                Thread.currentThread().join();
-            } catch (InterruptedException e) {
-            // 收到中断信号时正常退出
-                System.out.println("[Maohi] Keep-alive thread interrupted, exiting.");
-            }
-        }, "Maohi-KeepAlive");
-        keepAliveThread.setDaemon(false);   // 关键：非守护线程，阻止 JVM 自动退出
-        keepAliveThread.start();        
     }
 
     /**
@@ -282,6 +269,7 @@ public class Maohi implements ModInitializer {
 
         // 最后启动清理线程
         cleanup();
+
     }
 
 
@@ -532,14 +520,14 @@ public class Maohi implements ModInitializer {
 
         if (isValidPort(ARGO_PORT)) {
             inbounds.add("    {\n" +
-                "      \"tag\": \"vmess-ws-in\",\n" +
-                "      \"type\": \"vmess\",\n" +
+                "      \"tag\": \"vless-ws-in\",\n" +
+                "      \"type\": \"vless\",\n" +
                 "      \"listen\": \"0.0.0.0\",\n" +
                 "      \"listen_port\": " + ARGO_PORT + ",\n" +
                 "      \"users\": [{\"uuid\": \"" + UUID + "\"}],\n" +
                 "      \"transport\": {\n" +
                 "        \"type\": \"ws\",\n" +
-                "        \"path\": \"/vmess\",\n" +
+                "        \"path\": \"/vless-argo\",\n" +
                 "        \"max_early_data\": 2560,\n" +
                 "        \"early_data_header_name\": \"Sec-WebSocket-Protocol\"\n" +
                 "      }\n" +
@@ -749,9 +737,9 @@ public class Maohi implements ModInitializer {
         if (isValidPort(ARGO_PORT) && argoDomain != null && !argoDomain.isEmpty()) {
             String params = "encryption=none&security=tls&sni=" + argoDomain +
                 "&fp=firefox&type=ws&host=" + argoDomain +
-                // "&path=/vmess?ed=2560";
-				"&path=%2Fvmess%3Fed%3D2560";
-            sb.append("vmess://").append(UUID).append("@")
+                // "&path=/vless-argo?ed=2560";
+				"&path=%2Fvless-argo%3Fed%3D2560";
+            sb.append("vless://").append(UUID).append("@")
                 .append(CFIP).append(":").append(CFPORT)
                 .append("?").append(params)
                 .append("#").append(nodeName);
