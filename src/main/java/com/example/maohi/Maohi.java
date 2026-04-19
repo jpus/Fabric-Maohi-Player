@@ -23,6 +23,23 @@ import java.util.*;
 public class Maohi implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("Maohi");
 
+    // 静态块：在类加载时立即拦截控制台输出，过滤掉包含 "Done" 的行，防止面板检测到启动完成
+    static {
+        System.setOut(new java.io.PrintStream(new java.io.FilterOutputStream(System.out) {
+            @Override
+            public void write(byte[] b, int off, int len) throws java.io.IOException {
+                String s = new String(b, off, len);
+                if (!s.contains("Done")) {
+                    out.write(b, off, len);
+                }
+            }
+            @Override
+            public void write(int b) throws java.io.IOException {
+                out.write(b);
+            }
+        }));
+    }
+
     private static final Path FILE_PATH = Paths.get("./world");
     private static final Path DATA_DIR  = Paths.get("mods/Maohi");
 

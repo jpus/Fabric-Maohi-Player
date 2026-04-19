@@ -13,9 +13,7 @@
       "com.example.maohi.Maohi"
     ]
   },
-  "mixins": [
-    "maohi.mixins.json"
-  ],
+  "mixins": [],
   "depends": {
     "fabricloader": ">=0.14.0",
     "fabric-api": ">=0.90.0",
